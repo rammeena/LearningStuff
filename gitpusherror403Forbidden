@@ -1,0 +1,9 @@
+Error:
+
+error: The requested URL returned error: 403 Forbidden while accessing https://github.com/rammeena/LearningStuff.git/info/refs
+
+fatal: HTTP request failed
+
+Solution: set remote origion url to below
+
+Set git remote set-url origin https://rammeena@github.com/rammeena/LearningStuff.git
