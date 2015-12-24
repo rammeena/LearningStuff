@@ -1,0 +1,22 @@
+;
+; Reverse DNS FOR stacknet
+;
+$TTL 1D
+;
+@       IN      SOA     dns1.stacknet. info.stacknet.   (
+                                                2015121502;
+                                                8H;
+                                                2H;
+                                                4W;
+                                                1D;
+);
+@       IN      NS      dns1.stacknet.
+@       IN      NS      dns2.stacknet.
+@       IN      NS      dns3.stacknet.
+@       IN      PTR     stacknet.
+dns1    IN      A       172.16.1.2
+dns2    IN      A       172.16.1.3
+dns3    IN      A       172.16.1.4
+2     IN      PTR     controller1.stacknet.
+3     IN      PTR     controller2.stacknet.
+4     IN      PTR     controller3.stacknet.
