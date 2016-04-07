@@ -1,0 +1,40 @@
+;
+; Reverse DNS FOR stacknet
+;
+$TTL 1D
+;
+@       IN      SOA     dns1.stacknet. info.stacknet.   (
+                                                2015121508;
+                                                8H;
+                                                2H;
+                                                4W;
+                                                1D;
+);
+@       IN      NS      dns1.stacknet.
+@       IN      NS      dns2.stacknet.
+@       IN      PTR     stacknet.
+dns1	IN	A	172.21.15.111
+dns2	IN	A	172.21.15.112
+111     IN	PTR     controller1.stacknet.
+112     IN	PTR     controller2.stacknet.
+124     IN	PTR     controller3.stacknet.
+109	IN	PTR	workstation.stacknet.
+115	IN	PTR	cephstore1.stacknet.
+116	IN	PTR	cephstore2.stacknet.
+117	IN	PTR	cephstore3.stacknet.
+96	IN	PTR	cephstore4.stacknet.
+97	IN	PTR	cephstore5.stacknet.
+118	IN	PTR	computenode1.stacknet.
+119	IN	PTR	computenode2.stacknet.
+120	IN	PTR	computenode3.stacknet.
+121	IN	PTR	computenode4.stacknet.
+122	IN	PTR	computenode5.stacknet.
+123	IN	PTR	computenode6.stacknet.
+113	IN	PTR	networknode1.stacknet.
+114	IN	PTR	networknode2.stacknet.
+94	IN	PTR	networknode3.stacknet.
+95	IN	PTR	networknode4.stacknet.
+98	IN	PTR	objstore1.stacknet.
+99	IN	PTR	objstore2.stacknet.
+101	IN	PTR	objstore3.stacknet.
+102	IN	PTR	workdesk.stacknet.

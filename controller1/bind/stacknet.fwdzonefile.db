@@ -1,0 +1,39 @@
+;
+;DNS FOR stacknet
+;
+$TTL 1D
+;
+@       IN      SOA     dns1.stacknet. info.stacknet.   (
+                                                2015121509;
+                                                8H;
+                                                2H;
+                                                4W;
+                                                1D;
+);
+@          	    IN      NS      dns1.stacknet.
+@         	    IN      NS      dns2.stacknet.
+@              	    IN      A       172.21.15.111
+@                   IN      A       172.21.15.112
+dns1                IN      A       172.21.15.111 
+dns2                IN      A       172.21.15.112 
+controller1         IN      A       172.21.15.111 
+controller2         IN      A       172.21.15.112 
+controller3         IN      A       172.21.15.124
+workstation         IN      A       172.21.15.109
+cephstore1          IN      A       172.21.15.115
+cephstore2          IN      A       172.21.15.116
+cephstore3          IN      A       172.21.15.117
+cephstore4          IN      A       172.21.15.96
+cephstore5          IN      A       172.21.15.97
+computenode1        IN      A       172.21.15.118
+computenode2        IN      A       172.21.15.119
+computenode3        IN      A       172.21.15.120
+computenode4        IN      A       172.21.15.121
+computenode5        IN      A       172.21.15.122
+computenode6        IN      A       172.21.15.123
+networknode1	    IN	    A	    172.21.15.113
+networknode2	    IN      A	    172.21.15.114
+networknode4	    IN	    A	    172.21.15.95
+objstore1           IN      A       172.21.15.98
+objstore2           IN      A       172.21.15.99
+objstore3           IN      A       172.21.15.101
