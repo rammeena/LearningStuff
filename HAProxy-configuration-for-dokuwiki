@@ -1,0 +1,106 @@
+global
+  stats socket /var/run/haproxy.stats level admin
+  stats maxconn 10
+  stats timeout 60s
+  log 127.0.0.1 local3
+
+defaults
+  option http-server-close
+  timeout http-keep-alive   5s
+  timeout connect           5s
+  timeout client           15s
+  timeout server           10s
+  timeout tunnel          300s
+
+frontend ft_www
+  option socket-stats
+  bind 88.191.153.144:80 name www_ipv4
+  bind 88.191.153.144:443 name www_ssl_ipv4 ssl crt /etc/haproxy/certs/
+  mode http
+  log global
+  option httplog
+
+  capture request  header  Host              len 32
+  capture request  header  Accept-Encoding   len 32
+
+  capture response header  Location          len 64
+  capture response header  Content-Type      len 64
+
+  # standard HTTP log + SNI
+  log-format %ci:%cp\ [%t]\ %ft\ %b/%s\ %Tq/%Tw/%Tc/%Tr/%Tt\ %ST\ %B\ %CC\ %CS\ %tsc\ %ac/%fc/%bc/%sc/%rc\ %sq/%bq\ %hr\ %hs\ %[ssl_fc_sni]\ %{+Q}r
+
+  compression algo gzip
+  compression offload
+  compression type text/html text/plain text/css application/x-javascript text/javascript
+
+  tcp-request inspect-delay 5s
+
+  rspdel ^X-Powered-By.*
+  rspirep ^Server:(.*)$ Server:\ webserver
+
+  acl bad_path                path_beg     /w00tw00t
+  acl host_wiki               hdr(Host) -i wiki.bedis.eu
+
+  http-request redirect scheme https if !{ ssl_fc } host_wiki
+
+  http-request set-header X-SSL-SNI  %[ssl_fc_sni] #if path_test_sni
+
+  use_backend bk_badguys           if bad_path
+  use_backend bk_wiki              if host_wiki
+
+  default_backend bk_badguys
+  
+backend bk_wiki
+  mode http
+  log global
+  option httplog
+  option http-no-delay
+  option httpchk GET /check HTTP/1.0
+
+  acl tag_url path_beg /tag/
+  acl tag_index path_beg /tag/index
+
+  # HTTP redirects
+  http-request redirect location /index if tag_index
+  http-request redirect location /index if { path_sub pmwiki } # old wiki engine
+  http-request redirect location /index if { url / }
+
+  # Response header rewrite because dokuwiki matches local server port
+  rspirep ^Location:\ http(.*):443(.*)    Location:\ https\1\2     # compatible with proxy protocol
+  rspirep ^Location:\ (.*):62082(.*)      Location:\ \1\2
+  rspirep ^Location:\ (.*)\?&(\#.*)       Location:\ \1\2
+
+  # dokuwiki rewrite rules
+  reqrep ^([^\ :]*)\ /_media/(.*)                  \1\ /lib/exe/fetch.php?media=\2 if { path_beg /_media }
+  reqrep ^([^\ :]*)\ /_detail/(.*)                 \1\ /lib/exe/detailh.php?media=\2 if { path_beg /_detail }
+  reqrep ^([^\ :]*)\ /_export/([^/]+)/(.*)         \1\ /doku.php?do=export_\1&id=\2 if { path_beg /_export }
+  reqrep ^([^\ :]*)\ (.*)(\?do=admin.*)            \1\ /doku.php\3   if { url_sub ?do=admin }
+  reqrep ^([^\ :]*)\ (.*)(\?do=backlink.*)         \1\ /doku.php\3   if { url_sub ?do=backlink }
+  reqrep ^([^\ :]*)\ (.*)(\?do=media.*)            \1\ /doku.php\3   if { url_sub ?do=media }
+  reqrep ^([^\ :]*)\ (.*)(\?do=logout.*)           \1\ /doku.php\3   if { url_sub ?do=logout }
+  reqrep ^([^\ :]*)\ (.*)(\?do=login.*)            \1\ /doku.php\3   if { url_sub ?do=login }
+  reqrep ^([^\ :]*)\ (.*)(\?do=search.*)           \1\ /doku.php\3   if { url_sub ?do=search }
+  reqrep ^([^\ :]*)\ (.*)(\?do=recent)\ (.*)       \1\ /doku.php\3&id=\2\ \4  if { url_sub ?do=recent }
+  reqrep ^([^\ :]*)\ (.*)(/doku.php\?do=.*)\ (.*)  \1\ \3&id=\2\ \4  if { url_sub ?do=index ?do=backlink ?do=revisions }
+
+  reqrep ^([^\ :]*)\ /tag/(.*)(\?.*)\ (.*) \1\ /doku.php?id=tag:\2&do=showtag&tag:\2\ \4 if tag_url !tag_index
+  reqrep ^([^\ :]*)\ /tag/(.*)\ (.*) \1\ /doku.php?id=tag:\2&do=showtag&tag:\2\ \3       if tag_url !tag_index
+
+  acl dontrewrite path_beg /doku.php /lib /_media /_detail /_export /favicon.ico /google /tag /robots.txt
+  acl dontrewrite url_sub ? pmwiki
+  acl dontrewrite url /
+  reqrep ^([^\ :]*)\ (.*)                \1\ /doku.php?id=\2     unless  dontrewrite
+
+  acl search_highlight url_sub ?s[]
+  reqrep ^([^\ :]*)\ (.*)\?(s\[\]=.*)(\ HTTP.*) \1\ /doku.php?id=\2&\3\4 if search_highlight
+
+  # Header rewritting
+  reqrep ^Accept-Encoding:\ .*gzip.*    Accept-Encoding:\ gzip
+
+  server centos_www 127.0.0.1:62082 check send-proxy
+
+backend bk_badguys
+  mode http
+  log global
+  option httplog
+  errorfile 503 /etc/haproxy/503.txt
