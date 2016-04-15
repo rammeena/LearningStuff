@@ -1,0 +1,127 @@
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4096
+    user        haproxy
+    group       haproxy
+    daemon
+    spread-checks 2
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 2
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn     4096
+
+frontend foo *:80
+    acl bot       hdr_sub(User-Agent) -i baiduspider ia_archiver jeeves googlebot mediapartners-google msnbot slurp zyborg
+    acl foo       path_beg        -i /foo/
+    acl fooc      path_beg        -i /fooc/
+    acl fooh      path_beg        -i /fooh/
+    acl foothumb  path_beg        -i /foothumb/
+    acl featured  path_beg        -i /featured/foothumbnew/
+    acl cgi       path_beg        -i /cgi-bin/cgi-gw.exe
+
+    use_backend apache_fooh     if bot fooh
+    use_backend apache_foo      if foo
+    use_backend apache_fooc     if fooc
+    use_backend apache_foothumb if foothumb
+    use_backend apache_featured if featured
+    use_backend apache          if cgi
+    default_backend             tomcat
+
+backend tomcat
+    balance     leastconn
+    server      photos01_8080     10.8.0.72:8080 backup check
+    server      photos02_8080     10.8.0.73:8080 check
+
+backend apache
+    balance     leastconn
+    server      photos01_8080     10.8.0.72:8080 backup check
+    server      photos01_8081     10.8.0.72:8081 backup check
+    server      photos02_8080     10.8.0.73:8080 check
+    server      photos02_8081     10.8.0.73:8081 check
+
+backend apache_foo
+    reqirep ^([^\ ]*)\ /foo/(.*) \1\ /cgi-bin/cgi-gw.exe?action=webres&fooid=\2
+    balance     leastconn
+    server      photos01_8080     10.8.0.72:8080 backup check
+    server      photos01_8081     10.8.0.72:8081 backup check
+    server      photos02_8080     10.8.0.73:8080 check
+    server      photos02_8081     10.8.0.73:8081 check
+
+backend apache_fooh
+    reqirep ^([^\ ]*)\ /fooh/(.*) \1\ /cgi-bin/cgi-gw.exe?action=autodetails&fooid=\2
+    balance     leastconn
+    server      photos01_8080     10.8.0.72:8080 backup check
+    server      photos01_8081     10.8.0.72:8081 backup check
+    server      photos02_8080     10.8.0.73:8080 check
+    server      photos02_8081     10.8.0.73:8081 check
+
+backend apache_fooc
+    reqirep ^([^\ ]*)\ /fooc/(.*) \1\ /cgi-bin/cgi-gw.exe?action=capt&fooid=\2
+    balance     leastconn
+    server      photos01_8080     10.8.0.72:8080 backup check
+    server      photos01_8081     10.8.0.72:8081 backup check
+    server      photos02_8080     10.8.0.73:8080 check
+    server      photos02_8081     10.8.0.73:8081 check
+
+backend apache_foothumb
+    reqirep ^([^\ ]*)\ /foothumb/(.*) \1\ /cgi-bin/cgi-gw.exe?action=thumbres&fooid=\2
+    balance     leastconn
+    server      photos01_8080     10.8.0.72:8080 backup check
+    server      photos01_8081     10.8.0.72:8081 backup check
+    server      photos02_8080     10.8.0.73:8080 check
+    server      photos02_8081     10.8.0.73:8081 check
+
+backend apache_featured
+    reqirep ^([^\ ]*)\ /featured/foothumbnew/(.*) \1\ /cgi-bin/cgi-gw.exe?action=thumbhighres&fooid=\2
+    balance     leastconn
+    server      photos01_8080     10.8.0.72:8080 backup check
+    server      photos01_8081     10.8.0.72:8081 backup check
+    server      photos02_8080     10.8.0.73:8080 check
+    server      photos02_8081     10.8.0.73:8081 check
+
+listen  stats *:8080
+        stats uri /
+        maxconn     32
