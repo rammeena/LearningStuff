@@ -1,0 +1,32 @@
+Below commands could be used to setup git functioning on a Linux System:
+=======================================================================
+configuration of your credentials:
+*********************************
+1. git config --global user.name 'rammeena'
+2. git config --global user.email 'ram.meena.mail@gmail.com'
+3. git clone git@github.com:rammeena/LearningStuff.git
+#
+=======================================================================
+Authenication of your system using keys
+***************************************
+Copy your systems public key on github and perform below steps:
+--------------------------------------------------------------
+4. ssh -T git@github.com    #This to authenticate your system with github so you may push without username/password
+5. ssh -Tv git@github.com   #Authentication with verbose output
+6. ssh -T -p 443 git@ssh.github.com	#Authentication over HTTPS port
+
+7. setup your ~/.ssh/config file so no need to specify port number 443 on command
+
+[root@controller1 ~]# cat ~/.ssh/config
+Host github.com
+  Hostname ssh.github.com
+  Port 443
+=======================================================================
+Git Cloning and comming and pushing process:
+*******************************************
+8. git clone git@github.com:rammeena/LearningStuff.git
+9. Add some data to repo
+10. git status
+11. git add .
+12. git commit -a -m "config from controller1 running openstack liberty on centos 7 in production environment"
+13. git push origin prod-ha-centos-liberty-vstack
