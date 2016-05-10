@@ -7,8 +7,20 @@ configuration of your credentials:
 3. git clone git@github.com:rammeena/LearningStuff.git
 #
 =======================================================================
-Authenication of your system using keys
-***************************************
+You might face below error when cloing the repository:
+
+[root@controller3 tmp]# git clone git@github.com:rammeena/LearningStuff.git
+Cloning into 'LearningStuff'...
+ssh: connect to host github.com port 22: Connection refused
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+To resolve this issue please go through below solution:
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Setup Authenication of your system using keys and create .ssh/config file to use 443 port instead of 22 port
+***********************************************************************************************************
 Copy your systems public key on github and perform below steps:
 --------------------------------------------------------------
 4. ssh -T git@github.com    #This to authenticate your system with github so you may push without username/password
