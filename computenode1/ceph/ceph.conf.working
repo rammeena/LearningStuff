@@ -1,0 +1,40 @@
+[global]
+
+fsid = 00baac7a-0ad4-4ab7-9d5e-fdaf7d122aee
+
+auth cluster required = cephx
+auth service required = cephx
+auth client required = cephx
+
+public network = 172.21.17.0/24
+cluster network = 172.21.18.0/24
+
+filestore xattr use omap = true
+mon_pg_warn_max_per_osd = 0
+
+[mon]
+        mon initial members = cephstore1,cephstore2,cephstore3
+        mon host = cephstore1,cephstore2,cephstore3
+        mon addr = 172.21.17.11,172.21.17.12,172.21.17.13
+        mon clock drift allowed = .050
+        mon osd full ratio = .80
+        mon osd nearfull ratio = .70
+
+[mon.cephstore1]
+    host = cephstore1
+    mon addr = 172.21.17.11:6789
+    mon data = /var/lib/ceph/mon/ceph-cephstore1
+[mon.cephstore2]
+    host = cephstore2
+    mon addr = 172.21.17.12:6789
+    mon data = /var/lib/ceph/mon/ceph-cephstore2
+[mon.cephstore3]
+    host = cephstore3
+    mon addr = 172.21.17.13:6789
+    mon data = /var/lib/ceph/mon/ceph-cephstore3
+[client]
+rbd cache = true
+rbd cache writethrough until flush = true
+admin socket = /var/run/ceph/guests/$cluster-$type.$id.$pid.$cctid.asok
+log file = /var/log/qemu/qemu-guest-$pid.log
+rbd concurrent management ops = 20
