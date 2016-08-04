@@ -1,0 +1,7 @@
+NAME=enp0s17
+DEVICE=enp0s17
+OVSBOOTPROTO=none
+DEVICETYPE=ovs
+TYPE=OVSPort
+OVS_BRIDGE=br-provide
+ONBOOT=yes
