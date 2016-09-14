@@ -1,0 +1,6 @@
+To create VLAN Networks below things needs to be considerd:
+1. To configure VLAN networks, switch ports connecting with servers should be configured as trunk ports.
+2. You can create a range of VLAN networks or single VLAN network in openstack on single interface of
+   compute nodes and network nodes. In both cases interface connecting switch should be trunk interfaces.
+3. If you are configuring a FLAN type of network then trunk ports are not required because FLAT networks do not tag traffic
+   However VLAN networks tag traffic.
