@@ -2,5 +2,31 @@ To create VLAN Networks below things needs to be considerd:
 1. To configure VLAN networks, switch ports connecting with servers should be configured as trunk ports.
 2. You can create a range of VLAN networks or single VLAN network in openstack on single interface of
    compute nodes and network nodes. In both cases interface connecting switch should be trunk interfaces.
-3. If you are configuring a FLAN type of network then trunk ports are not required because FLAT networks do not tag traffic
-   However VLAN networks tag traffic.
+3. If you are configuring a FLAT type of network then trunk ports are not required because 
+   FLAT networks do not tag traffic However VLAN networks tag traffic so in case of anytype of VLAN Network in OpenStack
+   it is required that switch ports are configured as trunk ports.
+
+Example of Network Creation:
+
+neutron net-create vlan-network --provider:physical_network vlannet --provider:network_type vlan --provider:segmentation_id 317
+neutron subnet-create vlan-network 172.16.17.0/24 --name vlan-subnet --allocation-pool start=172.16.17.200,end=172.16.17.254
+
+neutron net-create trunk-network-1 --provider:physical_network trunknet --provider:network_type vlan --provider:segmentation_id 358
+neutron subnet-create trunk-network-1 10.0.40.0/24 --name trunk-sbunet-1
+
+neutron net-create trunk-network-2 --provider:physical_network trunknet --provider:network_type vlan --provider:segmentation_id 365
+neutron subnet-create trunk-network-2 10.0.41.0/24 --name trunk-sbunet-2
+
+neutron net-create trunk-network-3 --provider:physical_network trunknet --provider:network_type vlan --provider:segmentation_id 370
+neutron subnet-create trunk-network-3 10.0.42.0/24 --name trunk-sbunet-3
+
+neutron net-create fip-network-1 --provider:physical_network trunknet --provider:network_type vlan --router:external=True
+neutron subnet-create fip-network-1 10.0.43.0/24 --name fip-subnet-1
+
+neutron net-create vxlan-pvt-net-1
+neutron subnet-create vxlan-pvt-net-1 10.0.9.0/24 --name vxlan-pvt-subnet-1 --gateway 10.0.9.1
+
+neutron router-create router
+neutron router-gateway-set router fip-network-1 
+neutron router-interface-add router vxlan-pvt-subnet-1
+
