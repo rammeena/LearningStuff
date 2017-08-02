@@ -1,0 +1,296 @@
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    log         127.0.0.1 local2
+    log         127.0.0.1 local2 notice
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     50000
+    user        haproxy
+    group       haproxy
+    daemon
+    nbproc      4
+    cpu-map     1 0
+    cpu-map     2 1
+    cpu-map     3 2
+    cpu-map     4 3
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          100s
+    timeout server          100s
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 10000
+#---------------------------------------------------------------------
+# 'listen' section to enable haproxy stats
+#---------------------------------------------------------------------
+listen stats 172.22.12.50:51051      #Listen on VIP on port 51051
+    mode http
+    balance
+    #This is the virtual URL to access the stats page
+    stats uri /cluster_status
+    #Authentication realm. This can be set to anything. Escape space characters with a backslash.
+    stats realm HAProxy\ Statistics
+    #The user/pass you want to use. Change this password!
+    stats auth haadmin:Virtual650!!!
+    #This allows you to take down and bring up back end servers.
+    #This will produce an error on older versions of HAProxy.
+    stats admin if TRUE
+
+# MariaDB Galera Cluster
+listen mariadb-galera-cluster
+  bind 172.22.16.50:3306
+  balance source
+  mode tcp
+  option  tcpka
+  option  tcplog
+  option httpchk
+  server os-ctl1-ash-nj 172.22.16.11:3306 check port 9200 inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:3306 check port 9200 inter 2000 rise 2 fall 3 backup
+  server os-ctl3-ash-nj 172.22.16.13:3306 check port 9200 inter 2000 rise 2 fall 3 backup
+
+# RabbitMQ Cluster
+listen rabbitmq-cluster
+  bind 172.22.12.50:5672
+  balance source
+  mode tcp
+  option  tcpka
+  option  tcplog
+  option  clitcpka
+  timeout connect 5s
+  timeout client  3h
+  timeout server  3h
+  server os-ctl1-ash-nj 172.22.16.11:5672 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:5672 check inter 2000 rise 2 fall 3 backup
+  server os-ctl3-ash-nj 172.22.16.13:5672 check inter 2000 rise 2 fall 3 backup
+
+# Keystone Admin API HAProxy Configuration
+listen keystone-admin-api-cluster
+  bind 172.22.12.50:35357
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:35357 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:35357 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:35357 check inter 2000 rise 2 fall 3
+
+# Keystone Internal API HAProxy Configuration
+listen keystone-internal-api-cluster
+  bind 172.22.12.51:35357
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:35357 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:35357 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:35357 check inter 2000 rise 2 fall 3
+
+#Keystone Public API HAProxy Configuration
+listen keystone-public-api-cluster
+  bind 172.22.12.52:5000
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:5000 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:5000 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:5000 check inter 2000 rise 2 fall 3
+
+# Glance Admin API  Configuration
+listen Glance-admin-api-cluster
+  bind 172.22.12.50:9292
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:9292 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:9292 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:9292 check inter 2000 rise 2 fall 3
+
+# Glance Internal API  Configuration
+listen Glance-internal-api-cluster
+  bind 172.22.12.51:9292
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:9292 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:9292 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:9292 check inter 2000 rise 2 fall 3
+
+# Glance Public API  Configuration
+listen Glance-public-api-cluster
+  bind 172.22.12.52:9292
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:9292 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:9292 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:9292 check inter 2000 rise 2 fall 3
+
+#Glance Registry HAProxy Configuration
+listen glance-registry-cluster
+  bind 172.22.12.50:9191
+  balance source
+  option  tcpka
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:9191 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:9191 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:9191 check inter 2000 rise 2 fall 3
+
+
+# Nova Admin API HAProxy Configuration
+listen nova-admin-api-cluster
+  bind 172.22.12.50:8774
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:8774 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:8774 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:8774 check inter 2000 rise 2 fall 3
+
+# Nova Internal API HAProxy Configuration
+listen nova-internal-api-cluster
+  bind 172.22.12.51:8774
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:8774 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:8774 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:8774 check inter 2000 rise 2 fall 3
+
+# Nova Public API HAProxy Configuration
+listen nova-public-api-cluster
+  bind 172.22.12.52:8774
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:8774 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:8774 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:8774 check inter 2000 rise 2 fall 3
+
+#Nova Metadata API HAProxy Configuration
+listen nova-metadata-api-cluster
+  bind 172.22.12.51:8775
+  balance source
+  option  tcpka
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:8775 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:8775 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:8775 check inter 2000 rise 2 fall 3
+
+#Nova NoVNC HAProxy Cluster Configuration
+listen nova-novnc-console-cluster
+  bind 172.22.12.52:6080
+  balance source
+  option httplog
+  option  tcpka
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:6080 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:6080 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:6080 check inter 2000 rise 2 fall 3
+
+# Neutron Server Admin API  Configuration
+listen neutron-admin-api-cluster
+  bind 172.22.12.50:9696
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:9696 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:9696 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:9696 check inter 2000 rise 2 fall 3
+
+# Neutron Server Internal API  Configuration
+listen neutron-internal-api-cluster
+  bind 172.22.12.51:9696
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:9696 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:9696 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:9696 check inter 2000 rise 2 fall 3
+
+# Neutron Server Public API  Configuration
+listen neutron-public-api-cluster
+  bind 172.22.12.52:9696
+  balance source
+  option  tcpka
+  option  httpchk
+  option  tcplog
+  server os-ctl1-ash-nj 172.22.16.11:9696 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:9696 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:9696 check inter 2000 rise 2 fall 3
+
+#Cinder Admin API Cluster Configuration
+listen cinder-admin-api-cluster
+  bind 172.22.12.50:8776
+  balance source
+  option  tcpka
+  option  tcplog
+  option  httpchk
+  server os-ctl1-ash-nj 172.22.16.11:8776 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:8776 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:8776 check inter 2000 rise 2 fall 3
+
+#Cinder Internal API Cluster Configuration
+listen cinder-internal-api-cluster
+  bind 172.22.12.51:8776
+  balance source
+  option  tcpka
+  option  tcplog
+  option  httpchk
+  server os-ctl1-ash-nj 172.22.16.11:8776 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:8776 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:8776 check inter 2000 rise 2 fall 3
+
+#Cinder Public API Cluster Configuration
+listen cinder-public-api-cluster
+  bind 172.22.12.52:8776
+  balance source
+  option  tcpka
+  option  tcplog
+  option  httpchk
+  server os-ctl1-ash-nj 172.22.16.11:8776 check inter 2000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:8776 check inter 2000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:8776 check inter 2000 rise 2 fall 3
+
+#dashboard Cluster
+listen horizon_dashboard_cluster
+  bind  172.22.12.50:80
+  balance  source
+  capture  cookie vgnvisitor= len 32
+  cookie  SERVERID insert indirect nocache
+  mode  http
+  option  forwardfor
+  option  httpchk
+  option  tcpka
+  option  tcplog
+  rspidel  ^Set-cookie:\ IP=
+  server os-ctl1-ash-nj 172.22.16.11:80 cookie os-ctl1-ash-nj check inter 1000 rise 2 fall 3
+  server os-ctl2-ash-nj 172.22.16.12:80 cookie os-ctl2-ash-nj check inter 1000 rise 2 fall 3
+  server os-ctl3-ash-nj 172.22.16.13:80 cookie os-ctl3-ash-nj check inter 1000 rise 2 fall 3
