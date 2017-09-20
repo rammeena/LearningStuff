@@ -1,21 +1,36 @@
 Below commands could be used to setup git functioning on a Linux System:
 =======================================================================
-configuration of your credentials:
-*********************************
-1. git config --global user.name 'rammeena'
+=> First, you need to tell Git who you are::
+********************************************
+1. git config --global user.name 'Ram Meena'
 2. git config --global user.email 'ram.meena.mail@gmail.com'
-3. git clone git@github.com:rammeena/LearningStuff.git
-#
-=======================================================================
-You might face below error when cloing the repository:
 
-[root@controller3 tmp]# git clone git@github.com:rammeena/LearningStuff.git
+======================================================================
+=> Give GitHub your public keys::
+*********************************
+If GitHub has public keys of your system, then you can do all kinds of things
+from your command line without needing to enter your GitHub password.
+
+https://github.com/settings/ssh
+
+If you do not want to upload your public keys on github, then you’ll have to
+use https instead, and translate from the format of GitHub’s ssh URLS.
+
+======================================================================
+=> Cloning Github Repo:
+***********************
+git clone git@github.com:rammeena/LearningStuff.git   #if pub keys uploaded
+
+git clone https://github.com/rammeena/LearningStuff.git #if pub keys not uploaded
+
+You might face below error when cloing the repository:
+------------------------------------------------------
+git clone git@github.com:rammeena/LearningStuff.git
 Cloning into 'LearningStuff'...
 ssh: connect to host github.com port 22: Connection refused
 fatal: Could not read from remote repository.
 
-Please make sure you have the correct access rights
-and the repository exists.
+First make sure you have the correct access rights and the repository exists.
 
 To resolve this issue please go through below solution:
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
