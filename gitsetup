@@ -57,3 +57,19 @@ Git Cloning and comming and pushing process:
 11. git add .
 12. git commit -a -m "config from controller1 running openstack liberty on centos 7 in production environment"
 13. git push origin prod-ha-centos-liberty-vstack
+=========================================================================
+To push an existing repository from the command line:
+*****************************************************
+If you have created a local repo using 'git init' and wanted to push the changes to remote repo
+after 'git add' and 'git commit'. 
+
+Execute below commands where you have initiated a local repo:
+
+# git config --global user.name 'Ram Meena'
+# git config --global user.email 'ram.meena.mail@gmail.com'
+# git remote add origin git@github.com:rammeena/testing_test.git # replace repo name in URL
+# git push -u origin master  or push to any other branch instead master
+or
+# git push origin ceph_rados_php_object_code # it is not necessary that branch 'eph_rados_php_object_code' exists already.
+
+
