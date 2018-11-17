@@ -69,6 +69,17 @@ Execute below commands where you have initiated a local repo:
 # git config --global user.email 'ram.meena.mail@gmail.com'
 # git remote add origin git@github.com:rammeena/testing_test.git # replace repo name in URL
 # git push -u origin master  or push to any other branch instead master
+
+Here remote branch should exist locally first, if not then create branch first then push changes, see below:
+
+# git push -u origin remote_dnsmasq
+error: src refspec remote_dnsmasq does not match any.
+error: failed to push some refs to 'git@github.com:rammeena/maas.git'
+
+# git checkout -b remote_dnsmasq
+
+`# git push -u origin remote_dnsmasq`
+
 or
 # git push origin ceph_rados_php_object_code # it is not necessary that branch 'eph_rados_php_object_code' exists already.
 
